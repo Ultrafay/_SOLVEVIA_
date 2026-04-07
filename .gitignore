@@ -1,27 +1,59 @@
-# Environment & Credentials
+# ── Environment & Secrets ─────────────────────────────────────────────────────
 .env
+.env.*
+!.env.example
 credentials/
 *.json
 !railway.json
+!package.json
+!package-lock.json
+!tsconfig.json
+!next.json
 
-# Python
+# ── Python ────────────────────────────────────────────────────────────────────
 .venv/
+venv/
 __pycache__/
 *.pyc
 *.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.Python
+pip-log.txt
 
-# Runtime data
+# ── Node / Next.js ────────────────────────────────────────────────────────────
+node_modules/
+.next/
+out/
+.vercel/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+*.txt
+!README.md
+logs/
+
+# ── Runtime / Upload Dirs ─────────────────────────────────────────────────────
 uploads/
 Details/
-*.log
+server_error.log
 
-# IDE
+# ── IDE & OS ──────────────────────────────────────────────────────────────────
 .vscode/
 .idea/
 .gemini/
+.DS_Store
+Thumbs.db
 
-# Debug/test scripts
+# ── Debug / Diagnostic scripts (not production code) ─────────────────────────
 debug_*.py
+diag_*.py
 test_*.py
 verify_*.py
 reproduce_*.py
