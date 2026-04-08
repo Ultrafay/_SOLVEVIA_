@@ -34,8 +34,8 @@ DriveProcessor (workers/drive_processor.py)
         │
         ▼
 OCR Engine (ocr_engine.py)
-  — pdf2image + OpenCV preprocessing
-  — Tesseract OCR fallback for scanned docs
+  — pipeline orchestrator
+  — dispatches to GPT-4o (PDF or image)
         │
         ▼
 OpenAI Extractor (services/openai_extractor.py)
@@ -148,8 +148,6 @@ behind a feature flag or in a separate branch, and test against
 
 ### Prerequisites
 - Python 3.11+
-- Tesseract OCR installed system-wide (`tesseract --version` should work)
-- Poppler installed (for pdf2image: `pdftoppm -v` should work)
 - A `.env` file in the repo root (copy from `.env.example` when created)
 
 ### Setup
@@ -208,15 +206,6 @@ RAILWAY_ENVIRONMENT_ID=
 solvevia-product/
 ├── app.py                  # FastAPI app, OAuth routes, REST endpoints
 ├── ocr_engine.py           # Pipeline orchestrator (init + process_invoice)
-├── main.py                 # CLI entry point (batch mode)
-├── constants.py            # Shared constants
-├── extraction.py           # Legacy regex-based extraction (fallback)
-├── tables.py               # Table detection/parsing helpers
-├── preproces.py            # Image preprocessing before OCR
-├── converter.py            # PDF→image conversion
-├── run_ocr.py              # Tesseract wrapper
-├── handler.py              # File routing helper
-├── manual_extracter.py     # Manual override extraction
 ├── services/
 │   ├── openai_extractor.py # GPT-4o vision extraction (primary path)
 │   ├── quickbooks.py       # QBO OAuth + bill posting
