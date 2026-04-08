@@ -35,8 +35,14 @@ yarn-error.log*
 
 # ── Logs ─────────────────────────────────────────────────────────────────────
 *.log
-*.txt
-!README.md
+log*.txt
+out.txt
+test_out.txt
+main_output*.txt
+debug_output.txt
+qbo_error.txt
+error_and_solution.txt
+newfile.txt
 logs/
 
 # ── Runtime / Upload Dirs ─────────────────────────────────────────────────────
