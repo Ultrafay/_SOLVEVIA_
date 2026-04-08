@@ -25,7 +25,7 @@ Invoice (PDF/image)
 
 ## Current status
 
-The pipeline is live for our first client (Athgadlang). The next phase is
+The pipeline is live for our clients. The next phase is
 turning this into a multi-tenant SaaS platform — any firm can sign up,
 connect their QBO, and process invoices through a web dashboard.
 
