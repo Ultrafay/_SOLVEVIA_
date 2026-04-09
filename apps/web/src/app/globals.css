@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+/* ── Design tokens from solvevia-v3.html ── */
+:root {
+  /* Brand */
+  --y: #DEA653;
+  --yl: #FDF3E0;
+  --yd: #8B6320;
+  --ym: #F5D89A;
+
+  /* Sidebar */
+  --sb: #111318;
+  --sb2: #1A1D26;
+  --sbt: #5C6078;
+  --sbh: rgba(255, 255, 255, 0.05);
+
+  /* Surface */
+  --bg: #F0F1F3;
+  --card: #FFFFFF;
+  --bd: #E4E6EA;
+  --bd2: #D0D3DA;
+
+  /* Text */
+  --t1: #0D0F14;
+  --t2: #4B5263;
+  --t3: #8B90A0;
+
+  /* Status */
+  --green: #15803D;
+  --gbg: #DCFCE7;
+  --red: #DC2626;
+  --rbg: #FEE2E2;
+  --blue: #1D4ED8;
+  --bbg: #DBEAFE;
+  --amber: #92400E;
+  --abg: #FEF3C7;
+
+  /* Radii */
+  --r: 8px;
+  --r2: 12px;
+}
+
+@theme inline {
+  --font-sans: var(--font-dm-sans);
+  --font-mono: var(--font-dm-mono);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-sans, "DM Sans", system-ui, sans-serif);
+  background: var(--bg);
+  color: var(--t1);
+  font-size: 13px;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bd2);
+  border-radius: 10px;
+}
