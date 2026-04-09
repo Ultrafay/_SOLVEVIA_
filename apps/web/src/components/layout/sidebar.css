@@ -24,6 +24,7 @@
 }
 .sidebar:hover .logo-short {
   opacity: 0;
+  pointer-events: none;
 }
 
 .logo-wrap {
@@ -66,6 +67,9 @@
 }
 .logo-short {
   position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
   transition: opacity 0.18s;
 }
 
@@ -100,6 +104,11 @@
   position: relative;
   white-space: nowrap;
   text-decoration: none;
+}
+.ni svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
 }
 .ni:hover {
   background: var(--sbh);
