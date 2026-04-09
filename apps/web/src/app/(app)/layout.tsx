@@ -8,6 +8,7 @@ const pageTitles: Record<string, string> = {
   "/inbox": "Inbox",
   "/upload": "Upload",
   "/documents": "All Documents",
+  "/clients": "Clients",
 };
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
