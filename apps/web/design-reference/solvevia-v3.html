@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solvevia – Invoice Processing</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --y:#DEA653;--yl:#FDF3E0;--yd:#8B6320;--ym:#F5D89A;
+  --sb:#111318;--sb2:#1A1D26;--sbt:#5C6078;--sbh:rgba(255,255,255,0.05);
+  --bg:#F0F1F3;--card:#FFFFFF;--bd:#E4E6EA;--bd2:#D0D3DA;
+  --t1:#0D0F14;--t2:#4B5263;--t3:#8B90A0;
+  --green:#15803D;--gbg:#DCFCE7;--red:#DC2626;--rbg:#FEE2E2;
+  --blue:#1D4ED8;--bbg:#DBEAFE;--amber:#92400E;--abg:#FEF3C7;
+  --font:'DM Sans',system-ui,sans-serif;--mono:'DM Mono',monospace;
+  --r:8px;--r2:12px;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--t1);display:flex;height:100vh;overflow:hidden;font-size:13px;}
+
+/* ─── ICON SIDEBAR ─── */
+.sidebar{
+  width:56px;background:var(--sb);display:flex;flex-direction:column;
+  align-items:center;height:100vh;flex-shrink:0;
+  border-right:1px solid rgba(255,255,255,0.04);
+  transition:width 0.22s ease;overflow:hidden;position:relative;z-index:100;
+}
+.sidebar:hover{width:210px;}
+.sidebar:hover .nav-label{opacity:1;}
+.sidebar:hover .logo-full{opacity:1;}
+.sidebar:hover .logo-short{opacity:0;}
+
+.logo-wrap{width:100%;padding:14px 0;display:flex;align-items:center;justify-content:center;border-bottom:1px solid rgba(255,255,255,0.05);flex-shrink:0;height:52px;position:relative;}
+.logo-mark{width:28px;height:28px;background:var(--y);border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#0D0F14;flex-shrink:0;letter-spacing:-0.5px;}
+.logo-full{position:absolute;left:52px;top:50%;transform:translateY(-50%);white-space:nowrap;opacity:0;transition:opacity 0.18s;font-size:13px;font-weight:600;color:#fff;letter-spacing:-0.2px;}
+.logo-short{position:absolute;transition:opacity 0.18s;}
+
+.nav-section{width:100%;padding:12px 0 2px;flex-shrink:0;}
+.nav-section-label{font-size:9px;font-weight:600;letter-spacing:0.1em;color:rgba(92,96,120,0.5);text-transform:uppercase;padding:0 0 4px 18px;white-space:nowrap;opacity:0;transition:opacity 0.18s;}
+.sidebar:hover .nav-section-label{opacity:1;}
+
+.ni{
+  display:flex;align-items:center;height:36px;width:100%;padding:0 14px;
+  cursor:pointer;color:var(--sbt);border-radius:0;gap:12px;
+  transition:background 0.12s,color 0.12s;position:relative;white-space:nowrap;
+}
+.ni:hover{background:var(--sbh);color:#C5C8D6;}
+.ni.active{color:var(--y);}
+.ni.active::before{content:'';position:absolute;left:0;top:8px;bottom:8px;width:2.5px;background:var(--y);border-radius:0 2px 2px 0;}
+.ni svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;}
+.nav-label{opacity:0;transition:opacity 0.18s;font-size:12.5px;}
+.nb{margin-left:auto;background:var(--y);color:#0D0F14;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;flex-shrink:0;}
+.nb.r{background:#EF4444;color:#fff;}
+
+.sb-spacer{flex:1;}
+.sb-user{width:100%;padding:12px 14px;border-top:1px solid rgba(255,255,255,0.05);display:flex;align-items:center;gap:10px;cursor:pointer;flex-shrink:0;}
+.ua{width:26px;height:26px;border-radius:50%;background:var(--y);color:#0D0F14;font-size:9.5px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.un{font-size:12px;font-weight:500;color:#D1D5DB;white-space:nowrap;opacity:0;transition:opacity 0.18s;}
+.sidebar:hover .un{opacity:1;}
+
+/* ─── MAIN COLUMN ─── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+
+/* ─── TOP BAR ─── */
+.topbar{
+  background:var(--card);border-bottom:1px solid var(--bd);
+  display:flex;align-items:center;gap:0;height:52px;flex-shrink:0;
+  padding:0 20px;
+}
+.topbar-title{font-size:14px;font-weight:600;color:var(--t1);}
+.topbar-sep{color:var(--bd2);margin:0 10px;font-size:16px;}
+
+/* Pipeline health strip */
+.pipeline-strip{
+  display:flex;align-items:center;gap:0;
+  background:var(--card);border-bottom:1px solid var(--bd);
+  padding:0 20px;height:42px;flex-shrink:0;overflow-x:auto;
+  scrollbar-width:none;
+}
+.pipeline-strip::-webkit-scrollbar{display:none;}
+.ps-stage{display:flex;align-items:center;gap:8px;padding:0 16px;border-right:1px solid var(--bd);white-space:nowrap;}
+.ps-stage:first-child{padding-left:0;}
+.ps-stage:last-child{border-right:none;}
+.ps-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.ps-label{font-size:11px;color:var(--t3);font-weight:500;}
+.ps-count{font-size:13px;font-weight:700;color:var(--t1);font-family:var(--mono);}
+.ps-arrow{color:var(--bd2);font-size:13px;padding:0 4px;}
+
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
+.org-pill{font-size:11.5px;background:var(--yl);border:1px solid var(--ym);color:var(--yd);font-weight:600;padding:4px 10px;border-radius:20px;}
+.btn-upload{display:flex;align-items:center;gap:6px;background:var(--y);color:#0D0F14;border:none;padding:7px 14px;border-radius:var(--r);font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);}
+.btn-upload:hover{background:#C8913F;}
+.btn-upload svg{width:13px;height:13px;stroke:#0D0F14;fill:none;stroke-width:2.5;}
+.icon-btn{width:32px;height:32px;border:1px solid var(--bd);border-radius:var(--r);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.icon-btn svg{width:14px;height:14px;stroke:var(--t2);fill:none;stroke-width:1.8;}
+.notif-wrap{position:relative;}
+.notif-dot{position:absolute;top:5px;right:5px;width:7px;height:7px;background:#EF4444;border-radius:50%;border:1.5px solid var(--card);}
+
+/* ─── BODY: QUEUE + DETAIL ─── */
+.body{flex:1;display:flex;overflow:hidden;}
+
+/* ─── QUEUE PANEL ─── */
+.queue{
+  flex:1;display:flex;flex-direction:column;overflow:hidden;
+  border-right:1px solid var(--bd);
+  transition:flex 0.2s ease;
+}
+.queue.narrow{flex:0 0 420px;}
+
+.queue-toolbar{
+  display:flex;align-items:center;gap:8px;padding:10px 16px;
+  border-bottom:1px solid var(--bd);background:var(--card);flex-shrink:0;
+}
+.search-wrap{flex:1;position:relative;}
+.search-wrap svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);width:13px;height:13px;stroke:var(--t3);fill:none;stroke-width:1.8;}
+.search-input{width:100%;padding:6px 10px 6px 30px;border:1px solid var(--bd);border-radius:var(--r);background:var(--bg);font-size:12px;font-family:var(--font);color:var(--t1);outline:none;}
+.search-input:focus{border-color:var(--y);background:var(--card);}
+.filter-btn{display:flex;align-items:center;gap:4px;padding:6px 10px;border:1px solid var(--bd);border-radius:var(--r);background:transparent;font-size:11.5px;color:var(--t2);cursor:pointer;font-family:var(--font);}
+.filter-btn svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:1.8;}
+
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--bd);background:var(--card);flex-shrink:0;padding:0 16px;}
+.tab{padding:8px 12px;font-size:11.5px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color 0.12s,border-color 0.12s;display:flex;align-items:center;gap:5px;white-space:nowrap;}
+.tab:hover{color:var(--t2);}
+.tab.active{color:var(--t1);border-bottom-color:var(--y);}
+.tab-count{font-size:10px;font-weight:700;padding:1px 5px;border-radius:10px;background:var(--bg);}
+.tab.active .tab-count{background:var(--yl);color:var(--yd);}
+.tab-count.red{background:var(--rbg);color:var(--red);}
+
+/* Document rows */
+.doc-list{flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--bd) transparent;}
+.doc-row{
+  display:grid;
+  grid-template-columns:20px 1fr auto;
+  gap:8px;align-items:start;
+  padding:11px 16px;border-bottom:1px solid var(--bd);
+  cursor:pointer;transition:background 0.1s;position:relative;
+}
+.doc-row:hover{background:#FAFBFD;}
+.doc-row.selected{background:var(--yl);}
+.doc-row.selected::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--y);}
+
+.row-check{width:14px;height:14px;border:1.5px solid var(--bd2);border-radius:3px;flex-shrink:0;margin-top:2px;cursor:pointer;}
+.row-check.checked{background:var(--y);border-color:var(--y);}
+
+.row-main{min-width:0;}
+.row-top{display:flex;align-items:center;gap:6px;margin-bottom:4px;}
+.row-id{font-family:var(--mono);font-size:10.5px;color:var(--t3);flex-shrink:0;}
+.row-vendor{font-size:12.5px;font-weight:600;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.row-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.row-amount{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--t1);}
+.row-gl{font-size:11px;color:var(--t3);}
+.row-gl.auto{color:#15803D;}
+.row-date{font-size:11px;color:var(--t3);}
+
+.row-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:20px;font-size:10.5px;font-weight:600;white-space:nowrap;}
+.badge::before{content:'';width:4px;height:4px;border-radius:50%;background:currentColor;flex-shrink:0;}
+.b-done{background:var(--gbg);color:#15803D;}
+.b-review{background:var(--abg);color:#92400E;}
+.b-proc{background:var(--bbg);color:#1D4ED8;}
+.b-dup{background:var(--rbg);color:#991B1B;}
+.score-pill{display:flex;align-items:center;gap:4px;font-size:10.5px;font-weight:600;color:var(--t2);}
+.score-mini{width:28px;height:3px;background:var(--bd);border-radius:2px;overflow:hidden;}
+.score-mini-fill{height:100%;border-radius:2px;}
+
+/* Batch action bar */
+.batch-bar{
+  display:none;align-items:center;gap:10px;
+  padding:8px 16px;background:var(--sb);border-bottom:1px solid rgba(255,255,255,0.08);
+  flex-shrink:0;
+}
+.batch-bar.visible{display:flex;}
+.batch-count{font-size:12px;font-weight:600;color:#fff;}
+.batch-btn{padding:5px 12px;border-radius:var(--r);border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.07);font-size:11.5px;color:#C5C8D6;cursor:pointer;font-family:var(--font);}
+.batch-btn:hover{background:rgba(255,255,255,0.12);color:#fff;}
+.batch-close{margin-left:auto;color:var(--sbt);cursor:pointer;font-size:13px;}
+
+/* ─── DETAIL PANEL ─── */
+.detail{
+  width:0;overflow:hidden;background:var(--card);
+  display:flex;flex-direction:column;
+  transition:width 0.22s ease;flex-shrink:0;
+}
+.detail.open{width:380px;}
+
+.detail-header{
+  display:flex;align-items:center;gap:10px;
+  padding:14px 18px;border-bottom:1px solid var(--bd);flex-shrink:0;
+}
+.detail-close{width:26px;height:26px;border:1px solid var(--bd);border-radius:6px;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.detail-close svg{width:13px;height:13px;stroke:var(--t2);fill:none;stroke-width:2;}
+.detail-title{font-size:13px;font-weight:600;color:var(--t1);}
+.detail-id{font-family:var(--mono);font-size:11px;color:var(--t3);}
+.detail-actions{margin-left:auto;display:flex;gap:6px;}
+.da-btn{padding:5px 10px;border:1px solid var(--bd);border-radius:6px;background:transparent;font-size:11px;font-weight:500;cursor:pointer;font-family:var(--font);color:var(--t2);}
+.da-btn.primary{background:var(--y);color:#0D0F14;border-color:var(--y);font-weight:700;}
+.da-btn.primary:hover{background:#C8913F;}
+
+.detail-body{flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--bd) transparent;padding:16px 18px;display:flex;flex-direction:column;gap:16px;}
+
+/* PDF thumbnail */
+.pdf-thumb{
+  background:#F8F8FA;border:1px solid var(--bd);border-radius:var(--r2);
+  height:140px;display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:8px;color:var(--t3);cursor:pointer;
+  transition:border-color 0.12s;
+}
+.pdf-thumb:hover{border-color:var(--y);}
+.pdf-thumb svg{width:28px;height:28px;stroke:var(--bd2);fill:none;stroke-width:1.2;}
+.pdf-thumb-label{font-size:11px;color:var(--t3);}
+.pdf-thumb-sub{font-size:10px;color:var(--bd2);}
+
+/* Field groups */
+.field-group{display:flex;flex-direction:column;gap:8px;}
+.field-group-title{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--t3);padding-bottom:6px;border-bottom:1px solid var(--bd);}
+.field-row{display:flex;align-items:flex-start;gap:8px;}
+.field-label{font-size:11px;color:var(--t3);width:96px;flex-shrink:0;padding-top:1px;}
+.field-value{font-size:12.5px;color:var(--t1);font-weight:500;flex:1;min-width:0;}
+.field-input{width:100%;border:1px solid var(--bd);border-radius:6px;padding:5px 8px;font-size:12px;font-family:var(--font);color:var(--t1);background:var(--bg);outline:none;}
+.field-input:focus{border-color:var(--y);background:var(--card);}
+
+/* AI confidence block */
+.conf-block{background:var(--bg);border-radius:var(--r2);padding:12px 14px;display:flex;flex-direction:column;gap:8px;}
+.conf-header{display:flex;align-items:center;justify-content:space-between;}
+.conf-label{font-size:11px;color:var(--t3);font-weight:500;}
+.conf-score{font-size:18px;font-weight:700;font-family:var(--mono);}
+.conf-bar-wrap{height:5px;background:var(--bd);border-radius:3px;overflow:hidden;}
+.conf-bar{height:100%;border-radius:3px;transition:width 0.6s ease;}
+.conf-note{font-size:10.5px;color:var(--t3);}
+
+/* QBO status */
+.qbo-block{display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:var(--r2);padding:12px 14px;}
+.qbo-icon{width:32px;height:32px;border-radius:8px;background:var(--gbg);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.qbo-icon svg{width:16px;height:16px;stroke:var(--green);fill:none;stroke-width:2;}
+.qbo-label{font-size:12px;font-weight:600;color:var(--t1);}
+.qbo-sub{font-size:10.5px;color:var(--t3);}
+.qbo-icon.pending{background:var(--abg);}
+.qbo-icon.pending svg{stroke:#92400E;}
+.qbo-icon.failed{background:var(--rbg);}
+.qbo-icon.failed svg{stroke:var(--red);}
+
+/* ─── EMPTY STATE ─── */
+.empty-detail{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--t3);padding:24px;}
+.empty-detail svg{width:40px;height:40px;stroke:var(--bd2);fill:none;stroke-width:1;}
+.empty-detail p{font-size:12px;text-align:center;line-height:1.5;}
+
+/* ─── ALERT ROW ─── */
+.alert-row{display:flex;gap:10px;padding:10px 20px;background:var(--yl);border-bottom:1px solid var(--ym);flex-shrink:0;align-items:center;flex-wrap:wrap;}
+.alert-item{display:flex;align-items:center;gap:6px;font-size:12px;}
+.alert-item svg{width:13px;height:13px;flex-shrink:0;}
+.alert-item.warn svg{stroke:#92400E;}
+.alert-item.warn{color:#92400E;}
+.alert-item.err svg{stroke:var(--red);}
+.alert-item.err{color:var(--red);}
+.alert-item strong{font-weight:700;}
+.alert-sep{color:var(--ym);font-size:14px;}
+.alert-dismiss{margin-left:auto;font-size:11px;color:var(--yd);cursor:pointer;font-weight:500;text-decoration:underline;}
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:10px;}
+</style>
+</head>
+<body>
+
+<!-- ── ICON SIDEBAR ── -->
+<aside class="sidebar">
+  <div class="logo-wrap">
+    <div class="logo-short"><div class="logo-mark">S</div></div>
+    <div class="logo-full">Solvevia</div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Capture</div>
+    <div class="ni active">
+      <svg viewBox="0 0 24 24"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+      <span class="nav-label">Inbox</span>
+      <span class="nb">8</span>
+    </div>
+    <div class="ni">
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <span class="nav-label">Upload</span>
+    </div>
+    <div class="ni">
+      <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      <span class="nav-label">Review Queue</span>
+      <span class="nb r">3</span>
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Pipeline</div>
+    <div class="ni">
+      <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      <span class="nav-label">All Documents</span>
+    </div>
+    <div class="ni">
+      <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      <span class="nav-label">Duplicates</span>
+      <span class="nb">2</span>
+    </div>
+    <div class="ni">
+      <svg viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+      <span class="nav-label">GL Mapping</span>
+    </div>
+    <div class="ni">
+      <svg viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+      <span class="nav-label">Supplier Rules</span>
+    </div>
+    <div class="ni">
+      <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <span class="nav-label">Vault</span>
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Integrations</div>
+    <div class="ni">
+      <svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+      <span class="nav-label">QBO Sync</span>
+    </div>
+    <div class="ni">
+      <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      <span class="nav-label">Google Drive</span>
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Org</div>
+    <div class="ni">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span class="nav-label">Clients</span>
+    </div>
+    <div class="ni">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+      <span class="nav-label">Settings</span>
+    </div>
+  </div>
+
+  <div class="sb-spacer"></div>
+  <div class="sb-user">
+    <div class="ua">MZ</div>
+    <div class="un">Muzammil · Solvevia</div>
+  </div>
+</aside>
+
+<!-- ── MAIN ── -->
+<div class="main">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <span class="topbar-title">Inbox</span>
+    <span class="topbar-sep">·</span>
+    <div class="pipeline-strip">
+      <div class="ps-stage">
+        <div class="ps-dot" style="background:#3B82F6"></div>
+        <span class="ps-label">Uploaded</span>
+        <span class="ps-count">247</span>
+      </div>
+      <span class="ps-arrow">›</span>
+      <div class="ps-stage">
+        <div class="ps-dot" style="background:#8B5CF6"></div>
+        <span class="ps-label">Extracted</span>
+        <span class="ps-count">235</span>
+      </div>
+      <span class="ps-arrow">›</span>
+      <div class="ps-stage">
+        <div class="ps-dot" style="background:#DEA653"></div>
+        <span class="ps-label">GL Mapped</span>
+        <span class="ps-count">209</span>
+      </div>
+      <span class="ps-arrow">›</span>
+      <div class="ps-stage">
+        <div class="ps-dot" style="background:#EF4444"></div>
+        <span class="ps-label">Needs Review</span>
+        <span class="ps-count" style="color:#DC2626">8</span>
+      </div>
+      <span class="ps-arrow">›</span>
+      <div class="ps-stage">
+        <div class="ps-dot" style="background:#15803D"></div>
+        <span class="ps-label">QBO Synced</span>
+        <span class="ps-count" style="color:#15803D">201</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="org-pill">Athgadlang</span>
+      <div class="notif-wrap">
+        <button class="icon-btn"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></button>
+        <div class="notif-dot"></div>
+      </div>
+      <button class="btn-upload" onclick="document.querySelector('.detail').classList.add('open');document.querySelector('.queue').classList.add('narrow')">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Upload
+      </button>
+    </div>
+  </div>
+
+  <!-- Alert row -->
+  <div class="alert-row" id="alertRow">
+    <div class="alert-item warn">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <strong>3 low-confidence</strong> documents need manual review
+    </div>
+    <span class="alert-sep">·</span>
+    <div class="alert-item err">
+      <svg viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      <strong>2 duplicate invoices</strong> detected and blocked
+    </div>
+    <span class="alert-sep">·</span>
+    <div class="alert-item err">
+      <svg viewBox="0 0 24 24" fill="none"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+      <strong>2 QBO sync failures</strong> — action required
+    </div>
+    <span class="alert-dismiss" onclick="document.getElementById('alertRow').style.display='none'">Dismiss</span>
+  </div>
+
+  <!-- Body -->
+  <div class="body">
+
+    <!-- Queue -->
+    <div class="queue" id="queue">
+
+      <!-- Batch bar -->
+      <div class="batch-bar" id="batchBar">
+        <span class="batch-count" id="batchCount">0 selected</span>
+        <button class="batch-btn">Approve All</button>
+        <button class="batch-btn">Push to QBO</button>
+        <button class="batch-btn">Mark Reviewed</button>
+        <button class="batch-btn">Export</button>
+        <span class="batch-close" onclick="clearSelection()">✕ Clear</span>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="queue-toolbar">
+        <div class="search-wrap">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input class="search-input" type="text" placeholder="Search vendor, document ID, amount…">
+        </div>
+        <button class="filter-btn">
+          <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          Filter
+        </button>
+        <button class="filter-btn">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+          Sort
+        </button>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <div class="tab active">All <span class="tab-count">247</span></div>
+        <div class="tab">Needs Review <span class="tab-count red">8</span></div>
+        <div class="tab">Processing <span class="tab-count">4</span></div>
+        <div class="tab">Synced <span class="tab-count">201</span></div>
+        <div class="tab">Duplicates <span class="tab-count red">2</span></div>
+        <div class="tab">Failed <span class="tab-count red">2</span></div>
+      </div>
+
+      <!-- Document rows -->
+      <div class="doc-list" id="docList">
+
+        <div class="doc-row" onclick="openDetail(this,0)">
+          <div class="row-check" onclick="event.stopPropagation();toggleCheck(this)"></div>
+          <div class="row-main">
+            <div class="row-top">
+              <span class="row-id">INV-2026-0341</span>
+              <span class="row-vendor">Emirates NBD</span>
+            </div>
+            <div class="row-meta">
+              <span class="row-amount">AED 12,450.00</span>
+              <span class="row-gl auto">· Accounts Payable – AED ·</span>
+              <span class="row-gl auto">Bank Fees</span>
+              <span class="row-date">· 19 Mar 2026</span>
+            </div>
+          </div>
+          <div class="row-right">
+            <span class="badge b-done">Synced</span>
+            <span class="score-pill"><div class="score-mini"><div class="score-mini-fill" style="width:94%;background:#15803D"></div></div>94%</span>
+          </div>
+        </div>
+
+        <div class="doc-row selected" onclick="openDetail(this,1)">
+          <div class="row-check" onclick="event.stopPropagation();toggleCheck(this)"></div>
+          <div class="row-main">
+            <div class="row-top">
+              <span class="row-id">INV-2026-0340</span>
+              <span class="row-vendor">Dar Al Riyadh</span>
+            </div>
+            <div class="row-meta">
+              <span class="row-amount">AED 8,200.00</span>
+              <span class="row-gl" style="color:#DC2626">· Uncategorized ·</span>
+              <span class="row-gl">New vendor</span>
+              <span class="row-date">· 18 Mar 2026</span>
+            </div>
+          </div>
+          <div class="row-right">
+            <span class="badge b-review">Needs Review</span>
+            <span class="score-pill"><div class="score-mini"><div class="score-mini-fill" style="width:61%;background:#F59E0B"></div></div>61%</span>
+          </div>
+        </div>
+
+        <div class="doc-row" onclick="openDetail(this,2)">
+          <div class="row-check" onclick="event.stopPropagation();toggleCheck(this)"></div>
+          <div class="row-main">
+            <div class="row-top">
+              <span class="row-id">INV-2026-0339</span>
+              <span class="row-vendor">DEWA</span>
+            </div>
+            <div class="row-meta">
+              <span class="row-amount">AED 3,750.00</span>
+              <span class="row-gl auto">· Accounts Payable – AED ·</span>
+              <span class="row-gl auto">Utilities</span>
+              <span class="row-date">· 17 Mar 2026</span>
+            </div>
+          </div>
+          <div class="row-right">
+            <span class="badge b-done">Synced</span>
+            <span class="score-pill"><div class="score-mini"><div class="score-mini-fill" style="width:97%;background:#15803D"></div></div>97%</span>
+          </div>
+        </div>
+
+        <div class="doc-row" onclick="openDetail(this,3)">
+          <div class="row-check" onclick="event.stopPropagation();toggleCheck(this)"></div>
+          <div class="row-main">
+            <div class="row-top">
+              <span class="row-id">INV-2026-0338</span>
+              <span class="row-vendor">Du Telecom</span>
+            </div>
+            <div class="row-meta">
+              <span class="row-amount">AED 1,299.00</span>
+              <span class="row-gl auto">· Accounts Payable – AED ·</span>
+              <span class="row-gl auto">Telephone</span>
+              <span class="row-date">· 17 Mar 2026</span>
+            </div>
+          </div>
+          <div class="row-right">
+            <span class="badge b-proc">Processing</span>
+            <span class="score-pill"><div class="score-mini"><div class="score-mini-fill" style="width:91%;background:#15803D"></div></div>91%</span>
+          </div>
+        </div>
+
+        <div class="doc-row" onclick="openDetail(this,4)">
+          <div class="row-check" onclick="event.stopPropagation();toggleCheck(this)"></div>
+          <div class="row-main">
+            <div class="row-top">
+              <span class="row-id">INV-2026-0337</span>
+              <span class="row-vendor">Al Futtaim Group</span>
+            </div>
+            <div class="row-meta">
+              <span class="row-amount">AED 27,800.00</span>
+              <span class="row-gl" style="color:#DC2626">· Uncategorized ·</span>
+              <span class="row-gl">New vendor</span>
+              <span class="row-date">· 16 Mar 2026</span>
+            </div>
+          </div>
+          <div class="row-right">
+            <span class="badge b-review">Needs Review</span>
+            <span class="score-pill"><div class="score-mini"><div class="score-mini-fill" style="width:45%;background:#DC2626"></div></div>45%</span>
+          </div>
+        </div>
+
+        <div class="doc-row" onclick="openDetail(this,5)">
+          <div class="row-check" onclick="event.stopPropagation();toggleCheck(this)"></div>
+          <div class="row-main">
+            <div class="row-top">
+              <span class="row-id">INV-2026-0336</span>
+              <span class="row-vendor">Emirates NBD</span>
+              <span style="font-size:10px;background:#FEE2E2;color:#991B1B;padding:1px 6px;border-radius:4px;font-weight:600;">DUPLICATE</span>
+            </div>
+            <div class="row-meta">
+              <span class="row-amount">AED 12,450.00</span>
+              <span class="row-gl">· Same as INV-2026-0341 ·</span>
+              <span class="row-date">16 Mar 2026</span>
+            </div>
+          </div>
+          <div class="row-right">
+            <span class="badge b-dup">Blocked</span>
+            <span class="score-pill"><div class="score-mini"><div class="score-mini-fill" style="width:94%;background:#15803D"></div></div>94%</span>
+          </div>
+        </div>
+
+        <div class="doc-row" onclick="openDetail(this,6)">
+          <div class="row-check" onclick="event.stopPropagation();toggleCheck(this)"></div>
+          <div class="row-main">
+            <div class="row-top">
+              <span class="row-id">INV-2026-0335</span>
+              <span class="row-vendor">Careem</span>
+            </div>
+            <div class="row-meta">
+              <span class="row-amount">AED 540.00</span>
+              <span class="row-gl auto">· Accounts Payable – AED ·</span>
+              <span class="row-gl auto">Travel</span>
+              <span class="row-date">· 15 Mar 2026</span>
+            </div>
+          </div>
+          <div class="row-right">
+            <span class="badge b-done">Synced</span>
+            <span class="score-pill"><div class="score-mini"><div class="score-mini-fill" style="width:88%;background:#15803D"></div></div>88%</span>
+          </div>
+        </div>
+
+        <div class="doc-row" onclick="openDetail(this,7)">
+          <div class="row-check" onclick="event.stopPropagation();toggleCheck(this)"></div>
+          <div class="row-main">
+            <div class="row-top">
+              <span class="row-id">INV-2026-0334</span>
+              <span class="row-vendor">Noon.com</span>
+            </div>
+            <div class="row-meta">
+              <span class="row-amount">AED 2,100.00</span>
+              <span class="row-gl auto">· Accounts Payable – AED ·</span>
+              <span class="row-gl auto">Office Supplies</span>
+              <span class="row-date">· 14 Mar 2026</span>
+            </div>
+          </div>
+          <div class="row-right">
+            <span class="badge b-done">Synced</span>
+            <span class="score-pill"><div class="score-mini"><div class="score-mini-fill" style="width:79%;background:#F59E0B"></div></div>79%</span>
+          </div>
+        </div>
+
+        <div class="doc-row" onclick="openDetail(this,8)">
+          <div class="row-check" onclick="event.stopPropagation();toggleCheck(this)"></div>
+          <div class="row-main">
+            <div class="row-top">
+              <span class="row-id">INV-2026-0333</span>
+              <span class="row-vendor">Etisalat</span>
+            </div>
+            <div class="row-meta">
+              <span class="row-amount">AED 899.00</span>
+              <span class="row-gl auto">· Accounts Payable – AED ·</span>
+              <span class="row-gl auto">Telephone</span>
+              <span class="row-date">· 13 Mar 2026</span>
+            </div>
+          </div>
+          <div class="row-right">
+            <span class="badge b-review">Needs Review</span>
+            <span class="score-pill"><div class="score-mini"><div class="score-mini-fill" style="width:58%;background:#DC2626"></div></div>58%</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Detail Panel -->
+    <div class="detail open" id="detail">
+      <div class="detail-header">
+        <button class="detail-close" onclick="closeDetail()">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+        <div>
+          <div class="detail-title">Dar Al Riyadh</div>
+          <div class="detail-id">INV-2026-0340</div>
+        </div>
+        <div class="detail-actions">
+          <button class="da-btn">Skip</button>
+          <button class="da-btn primary">Approve →</button>
+        </div>
+      </div>
+
+      <div class="detail-body">
+
+        <!-- PDF Thumbnail -->
+        <div class="pdf-thumb">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          <div class="pdf-thumb-label">INV-2026-0340.pdf</div>
+          <div class="pdf-thumb-sub">Click to open full view</div>
+        </div>
+
+        <!-- AI Confidence -->
+        <div class="conf-block">
+          <div class="conf-header">
+            <span class="conf-label">AI Confidence Score</span>
+            <span class="conf-score" style="color:#F59E0B">61%</span>
+          </div>
+          <div class="conf-bar-wrap"><div class="conf-bar" style="width:61%;background:#F59E0B"></div></div>
+          <div class="conf-note">Below 85% threshold — manual review required before QBO sync</div>
+        </div>
+
+        <!-- Extracted Fields -->
+        <div class="field-group">
+          <div class="field-group-title">Extracted Data</div>
+          <div class="field-row">
+            <span class="field-label">Vendor</span>
+            <input class="field-input" value="Dar Al Riyadh" />
+          </div>
+          <div class="field-row">
+            <span class="field-label">Amount</span>
+            <input class="field-input" value="8,200.00" />
+          </div>
+          <div class="field-row">
+            <span class="field-label">Currency</span>
+            <input class="field-input" value="AED" />
+          </div>
+          <div class="field-row">
+            <span class="field-label">Invoice Date</span>
+            <input class="field-input" value="18 Mar 2026" />
+          </div>
+          <div class="field-row">
+            <span class="field-label">Invoice No.</span>
+            <input class="field-input" value="DR-2026-0118" />
+          </div>
+        </div>
+
+        <!-- GL Categorization -->
+        <div class="field-group">
+          <div class="field-group-title">GL Categorization</div>
+          <div class="field-row">
+            <span class="field-label">AP Account</span>
+            <input class="field-input" value="Accounts Payable (A/P) – AED" />
+          </div>
+          <div class="field-row">
+            <span class="field-label">GL Category</span>
+            <select class="field-input">
+              <option selected>— Select category —</option>
+              <option>Bank Fees</option>
+              <option>Utilities</option>
+              <option>Telephone</option>
+              <option>Travel</option>
+              <option>Office Supplies</option>
+              <option>Professional Services</option>
+              <option>Rent</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <span class="field-label">No rule</span>
+            <span class="field-value" style="font-size:11px;color:#92400E;background:#FEF3C7;padding:3px 8px;border-radius:5px;">New vendor · no supplier rule matched</span>
+          </div>
+        </div>
+
+        <!-- QBO Status -->
+        <div class="field-group">
+          <div class="field-group-title">QBO Status</div>
+          <div class="qbo-block">
+            <div class="qbo-icon pending">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div>
+              <div class="qbo-label">Pending sync</div>
+              <div class="qbo-sub">Will push to QBO after approval</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+let selectedRows = new Set();
+const docs = [
+  {vendor:'Emirates NBD',id:'INV-2026-0341',amount:'AED 12,450.00',date:'19 Mar 2026',gl:'Bank Fees',ap:'Accounts Payable (A/P) – AED',score:94,status:'done',qbo:'synced',inv:'ENB-2026-440'},
+  {vendor:'Dar Al Riyadh',id:'INV-2026-0340',amount:'AED 8,200.00',date:'18 Mar 2026',gl:'',ap:'',score:61,status:'review',qbo:'pending',inv:'DR-2026-0118'},
+  {vendor:'DEWA',id:'INV-2026-0339',amount:'AED 3,750.00',date:'17 Mar 2026',gl:'Utilities',ap:'Accounts Payable (A/P) – AED',score:97,status:'done',qbo:'synced',inv:'DEWA-MAR-26'},
+  {vendor:'Du Telecom',id:'INV-2026-0338',amount:'AED 1,299.00',date:'17 Mar 2026',gl:'Telephone',ap:'Accounts Payable (A/P) – AED',score:91,status:'processing',qbo:'pending',inv:'DU-4412-2026'},
+  {vendor:'Al Futtaim Group',id:'INV-2026-0337',amount:'AED 27,800.00',date:'16 Mar 2026',gl:'',ap:'',score:45,status:'review',qbo:'pending',inv:'AFG-2026-0037'},
+  {vendor:'Emirates NBD',id:'INV-2026-0336',amount:'AED 12,450.00',date:'16 Mar 2026',gl:'Bank Fees',ap:'',score:94,status:'duplicate',qbo:'blocked',inv:'ENB-2026-440'},
+  {vendor:'Careem',id:'INV-2026-0335',amount:'AED 540.00',date:'15 Mar 2026',gl:'Travel',ap:'Accounts Payable (A/P) – AED',score:88,status:'done',qbo:'synced',inv:'CRM-20260315'},
+  {vendor:'Noon.com',id:'INV-2026-0334',amount:'AED 2,100.00',date:'14 Mar 2026',gl:'Office Supplies',ap:'Accounts Payable (A/P) – AED',score:79,status:'done',qbo:'synced',inv:'NOON-2843'},
+  {vendor:'Etisalat',id:'INV-2026-0333',amount:'AED 899.00',date:'13 Mar 2026',gl:'Telephone',ap:'Accounts Payable (A/P) – AED',score:58,status:'review',qbo:'pending',inv:'ET-MAR-2026-99'},
+];
+
+function openDetail(row, idx) {
+  document.querySelectorAll('.doc-row').forEach(r=>r.classList.remove('selected'));
+  row.classList.add('selected');
+  const d = docs[idx];
+  const detail = document.getElementById('detail');
+  const queue = document.getElementById('queue');
+  detail.classList.add('open');
+  queue.classList.add('narrow');
+
+  const scoreColor = d.score >= 85 ? '#15803D' : d.score >= 60 ? '#F59E0B' : '#DC2626';
+  const qboIcon = d.qbo === 'synced'
+    ? `<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`
+    : d.qbo === 'blocked'
+    ? `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>`
+    : `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
+  const qboClass = d.qbo === 'synced' ? '' : d.qbo === 'blocked' ? 'failed' : 'pending';
+  const qboLabel = d.qbo === 'synced' ? 'Synced to QBO' : d.qbo === 'blocked' ? 'Blocked – duplicate' : 'Pending sync';
+  const qboSub = d.qbo === 'synced' ? 'Successfully pushed to QuickBooks Online' : d.qbo === 'blocked' ? 'Resolve duplicate before pushing' : 'Will push to QBO after approval';
+
+  const noteText = d.score >= 85 ? 'Auto-approved — no review required' : d.score >= 60 ? 'Below 85% threshold — manual review required before QBO sync' : 'Very low confidence — immediate review required';
+
+  detail.querySelector('.detail-title').textContent = d.vendor;
+  detail.querySelector('.detail-id').textContent = d.id;
+  detail.querySelector('.conf-score').textContent = d.score + '%';
+  detail.querySelector('.conf-score').style.color = scoreColor;
+  detail.querySelector('.conf-bar').style.width = d.score + '%';
+  detail.querySelector('.conf-bar').style.background = scoreColor;
+  detail.querySelector('.conf-note').textContent = noteText;
+  detail.querySelector('.qbo-icon').className = 'qbo-icon ' + qboClass;
+  detail.querySelector('.qbo-icon').innerHTML = qboIcon;
+  detail.querySelector('.qbo-label').textContent = qboLabel;
+  detail.querySelector('.qbo-sub').textContent = qboSub;
+
+  const inputs = detail.querySelectorAll('.field-input');
+  inputs[0].value = d.vendor;
+  inputs[1].value = d.amount.replace('AED ','');
+  inputs[2].value = 'AED';
+  inputs[3].value = d.date;
+  inputs[4].value = d.inv;
+  inputs[5].value = d.ap || '';
+
+  const glNote = detail.querySelector('.field-row:last-child span.field-value');
+  if (!d.gl) {
+    glNote.textContent = 'New vendor · no supplier rule matched';
+    glNote.style.display = '';
+  } else {
+    glNote.style.display = 'none';
+  }
+}
+
+function closeDetail() {
+  document.getElementById('detail').classList.remove('open');
+  document.getElementById('queue').classList.remove('narrow');
+  document.querySelectorAll('.doc-row').forEach(r=>r.classList.remove('selected'));
+}
+
+function toggleCheck(el) {
+  el.classList.toggle('checked');
+  const row = el.closest('.doc-row');
+  const id = row.querySelector('.row-id').textContent;
+  if (el.classList.contains('checked')) selectedRows.add(id);
+  else selectedRows.delete(id);
+  updateBatch();
+}
+
+function updateBatch() {
+  const bar = document.getElementById('batchBar');
+  const count = document.getElementById('batchCount');
+  if (selectedRows.size > 0) {
+    bar.classList.add('visible');
+    count.textContent = selectedRows.size + ' selected';
+  } else {
+    bar.classList.remove('visible');
+  }
+}
+
+function clearSelection() {
+  selectedRows.clear();
+  document.querySelectorAll('.row-check').forEach(c=>c.classList.remove('checked'));
+  updateBatch();
+}
+
+// Tabs
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+  });
+});
+
+// Open second row by default
+document.querySelectorAll('.doc-row')[1].click();
+</script>
+</body>
+</html>
